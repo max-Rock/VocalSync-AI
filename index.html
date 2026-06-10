@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VocalSync AI - Multilingual Video Caption Generator & Styling Suite</title>
+    <meta name="description" content="Generate and design high-quality, synchronized captions in Hindi, English, and Hinglish. Style your subtitles with presets like TikTok, Netflix, and Neon." />
+    
+    <!-- Google Fonts for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Montserrat:wght@400;600;700;900&family=Orbitron:wght@600;900&family=Playfair+Display:ital,wght@0,700;1,700&family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div id="app" class="app-container">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="logo-area">
+          <div class="logo-glow"></div>
+          <span class="logo-icon">✨</span>
+          <h1 id="app-title">VocalSync <span class="accent-text">AI</span></h1>
+        </div>
+        <div class="header-status">
+          <span class="status-dot green-glow"></span>
+          <span id="system-status-text">Client Engine Idle</span>
+        </div>
+      </header>
+
+      <!-- Main Workspace -->
+      <main class="workspace-grid">
+        
+        <!-- Left Column: Video Preview and Styling -->
+        <section class="workspace-left" aria-label="Video Player and Customization">
+          
+          <!-- Import / Drag & Drop Card -->
+          <div id="import-drop-zone" class="glass-card upload-card">
+            <input type="file" id="video-file-input" accept="video/*,audio/*" style="display: none;" />
+            <div class="upload-icon-container">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="upload-svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <h3>Import Video or Audio</h3>
+            <p>Drag and drop your file here, or click to browse</p>
+            <span class="file-limits">Supports MP4, WebM, MKV, MP3, WAV (Max 150MB recommended)</span>
+            <button id="browse-btn" class="btn secondary-btn">Browse Files</button>
+          </div>
+
+          <!-- Video Player & Caption Preview -->
+          <div id="player-container-card" class="glass-card player-card hidden">
+            <div class="video-wrapper">
+              <video id="main-video-player" controls preload="metadata"></video>
+              <!-- Captions overlay container absolute-positioned on top of video -->
+              <div id="subtitle-overlay-container" class="subtitle-overlay"></div>
+            </div>
+            
+            <div class="file-details">
+              <span id="loaded-file-name" class="file-name">my_video.mp4</span>
+              <button id="change-video-btn" class="btn text-btn-danger">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                Remove
+              </button>
+            </div>
+          </div>
+
+          <!-- Caption Styling Options -->
+          <div id="styling-options-card" class="glass-card styling-card">
+            <h2 class="card-title">Caption Styling Suite</h2>
+            <div class="styling-grid">
+              
+              <!-- Presets -->
+              <div class="style-group presets-row">
+                <label class="control-label">Graphics Presets</label>
+                <div class="preset-buttons-container">
+                  <button id="preset-classic-btn" class="preset-btn active" data-preset="classic">Classic</button>
+                  <button id="preset-netflix-btn" class="preset-btn" data-preset="netflix">Netflix</button>
+                  <button id="preset-tiktok-btn" class="preset-btn" data-preset="tiktok">TikTok</button>
+                  <button id="preset-neon-btn" class="preset-btn" data-preset="neon">Neon</button>
+                  <button id="preset-meme-btn" class="preset-btn" data-preset="meme">Meme</button>
+                  <button id="preset-karaoke-btn" class="preset-btn" data-preset="karaoke">Karaoke</button>
+                </div>
+              </div>
+
+              <!-- Typography & Size -->
+              <div class="style-row">
+                <div class="style-group">
+                  <label for="font-family-select" class="control-label">Font Family</label>
+                  <select id="font-family-select" class="form-input">
+                    <option value="Inter" selected>Inter (Modern Clean)</option>
+                    <option value="Poppins">Poppins (Rounded Pop)</option>
+                    <option value="Montserrat">Montserrat (Bold Title)</option>
+                    <option value="Orbitron">Orbitron (Neon/Cyber)</option>
+                    <option value="Playfair Display">Playfair (Sleek Serif)</option>
+                    <option value="Impact">Impact (Meme Outline)</option>
+                  </select>
+                </div>
+
+                <div class="style-group">
+                  <label for="font-size-slider" class="control-label">Font Size (<span id="font-size-val">24</span>px)</label>
+                  <input type="range" id="font-size-slider" min="14" max="64" value="24" class="slider" />
+                </div>
+              </div>
+
+              <!-- Colors & Background -->
+              <div class="style-row">
+                <div class="style-group">
+                  <label for="text-color-picker" class="control-label">Text Color</label>
+                  <div class="color-picker-wrapper">
+                    <input type="color" id="text-color-picker" value="#ffffff" />
+                    <span id="text-color-hex">#FFFFFF</span>
+                  </div>
+                </div>
+
+                <div class="style-group">
+                  <label for="bg-color-picker" class="control-label">Background Color</label>
+                  <div class="color-picker-wrapper">
+                    <input type="color" id="bg-color-picker" value="#000000" />
+                    <span id="bg-color-hex">#000000</span>
+                  </div>
+                </div>
+
+                <div class="style-group">
+                  <label for="bg-opacity-slider" class="control-label">BG Opacity (<span id="bg-opacity-val">60</span>%)</label>
+                  <input type="range" id="bg-opacity-slider" min="0" max="100" value="60" class="slider" />
+                </div>
+              </div>
+
+              <!-- Positioning & Capitalization -->
+              <div class="style-row">
+                <div class="style-group">
+                  <label for="vertical-pos-slider" class="control-label">Vertical Position (<span id="vertical-pos-val">85</span>%)</label>
+                  <input type="range" id="vertical-pos-slider" min="10" max="95" value="85" class="slider" />
+                </div>
+                
+                <div class="style-group">
+                  <label for="text-transform-select" class="control-label">Text Format</label>
+                  <select id="text-transform-select" class="form-input">
+                    <option value="none" selected>Standard Case</option>
+                    <option value="uppercase">ALL UPPERCASE</option>
+                  </select>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
+
+        <!-- Right Column: AI Transcriber Controls & Interactive Subtitle Editor -->
+        <section class="workspace-right" aria-label="AI Controller and Caption Timeline">
+          
+          <!-- AI Generation Controls Card -->
+          <div class="glass-card controls-card">
+            <h2 class="card-title">AI Caption Controls</h2>
+            
+            <div class="form-grid">
+              
+              <!-- Language Choice -->
+              <div class="form-group">
+                <label for="language-select" class="control-label">Target Caption Language</label>
+                <select id="language-select" class="form-input">
+                  <option value="hindi_code_switched" selected>Hindi in Devanagari (but English words in Latin script)</option>
+                  <option value="english">English (Completely in English)</option>
+                </select>
+              </div>
+
+              <!-- Model Complexity -->
+              <div class="form-group">
+                <label for="model-select" class="control-label">AI Model Size (Speed vs. Quality)</label>
+                <select id="model-select" class="form-input">
+                  <option value="base">Whisper-Base (Fast - 140M params)</option>
+                  <option value="small">Whisper-Small (Balanced - 240M params)</option>
+                  <option value="medium" selected>Whisper-Medium (High Accuracy - 769M params)</option>
+                  <option value="large-v3">Whisper-Large-v3 (Maximum Accuracy - 1.5B params)</option>
+                </select>
+              </div>
+
+            </div>
+
+            <!-- Trigger Button -->
+            <button id="generate-captions-btn" class="btn primary-btn" disabled>
+              <span id="generate-btn-icon">⚡</span>
+              <span id="generate-btn-text">Import a video to begin</span>
+            </button>
+            <p style="font-size: 11px; color: var(--color-text-muted); text-align: center; margin-top: 10px; line-height: 1.4;">
+              Requires local Python server running:<br>
+              <code style="background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 10px; color: var(--color-accent);">python server.py</code>
+            </p>
+
+            <!-- Detailed Processing Progress Card (Hidden initially) -->
+            <div id="processing-progress-container" class="progress-container hidden">
+              <div class="progress-header">
+                <span id="progress-status-title">Extracting Audio...</span>
+                <span id="progress-percentage-label">0%</span>
+              </div>
+              <div class="progress-bar-track">
+                <div id="progress-bar-fill" class="progress-bar-fill"></div>
+              </div>
+              <p id="progress-status-desc" class="progress-status-desc">Starting audio pipeline.</p>
+              
+              <!-- Sub-modules download status -->
+              <div id="model-downloads-list" class="model-downloads"></div>
+            </div>
+          </div>
+
+          <!-- Interactive Caption Editor Card (Visible after captions are loaded/generated) -->
+          <div class="glass-card editor-card">
+            <div class="editor-header">
+              <h2 class="card-title">Interactive Subtitle Timeline</h2>
+              <div class="editor-actions">
+                <button id="add-caption-card-btn" class="btn text-btn" title="Add empty caption segment">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Add Card
+                </button>
+              </div>
+            </div>
+            
+            <!-- Timeline Search / Filter / Info -->
+            <div class="timeline-meta-row">
+              <span id="total-segments-badge" class="badge">0 Segments</span>
+              <span id="total-duration-badge" class="badge secondary-badge">0:00 Duration</span>
+            </div>
+
+            <!-- Scrollable Caption Editor List -->
+            <div id="caption-timeline-list" class="caption-timeline-list">
+              <div id="timeline-empty-state" class="timeline-empty-state">
+                <div class="empty-state-graphic">⏳</div>
+                <p>Import a media file and click "Generate" to populate the caption timeline.</p>
+              </div>
+            </div>
+
+            <!-- Export Caption Suite (Hidden initially) -->
+            <div id="export-suite-container" class="export-suite-container hidden">
+              <label class="control-label">Export Subtitles & Video</label>
+              <div class="export-buttons-row">
+                <button id="export-srt-btn" class="btn outline-btn font-sm">
+                  <span>Download .SRT</span>
+                </button>
+                <button id="export-vtt-btn" class="btn outline-btn font-sm">
+                  <span>Download .VTT</span>
+                </button>
+                <button id="export-json-btn" class="btn outline-btn font-sm">
+                  <span>Download JSON</span>
+                </button>
+              </div>
+              <button id="export-video-btn" class="btn primary-btn" style="margin-top: 15px; width: 100%;">
+                <span id="export-video-btn-icon">🎬</span>
+                <span id="export-video-btn-text">Download Edited Video</span>
+              </button>
+            </div>
+
+          </div>
+        </section>
+
+      </main>
+    </div>
+    
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
