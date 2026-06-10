@@ -4,12 +4,13 @@ import numpy as np
 import json
 import uuid
 import subprocess
-from fastapi import FastAPI, Header, HTTPException, Request, UploadFile, File, Form
+from fastapi import FastAPI, Header, HTTPException, Request, UploadFile, File, Form, BackgroundTasks
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from faster_whisper import WhisperModel
 import uvicorn
 import imageio_ffmpeg
+
 
 # Enable unbuffered/line-buffered stdout with UTF-8 encoding
 sys.stdout.reconfigure(encoding='utf-8', line_buffering=True)
@@ -305,12 +306,25 @@ def format_ass_time(seconds):
     secs = seconds % 60
     return f"{hours}:{minutes:02d}:{secs:05.2f}"
 
+def cleanup_temp_files(*file_paths):
+    for path in file_paths:
+        try:
+            if path and os.path.exists(path):
+                os.remove(path)
+                print(f"[Cleanup] Removed temporary file: {path}")
+        except Exception as e:
+            print(f"[Cleanup] Error removing {path}: {e}")
+
 @app.post("/render")
 async def render_video(
+    background_tasks: BackgroundTasks,
     video: UploadFile = File(...),
     captions: str = Form(...),
     styleConfig: str = Form(...)
 ):
+    input_vid_path = None
+    ass_path = None
+    output_vid_path = None
     try:
         import json
         caps = json.loads(captions)
@@ -381,11 +395,21 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
             print(f"[Render] FFmpeg error: {result.stderr}")
             raise Exception("Video rendering failed.")
             
+        # Clean up input video and ASS file immediately as they are no longer needed
+        cleanup_temp_files(input_vid_path, ass_path)
+        
+        # Schedule cleanup of the output video to execute after client downloads it
+        background_tasks.add_task(cleanup_temp_files, output_vid_path)
+        
         return FileResponse(output_vid_path, media_type="video/mp4", filename="edited_captions.mp4")
         
     except Exception as e:
         print(f"[Render] Error: {str(e)}")
+        # Clean up any leftover files on failure
+        paths_to_clean = [p for p in [input_vid_path, ass_path, output_vid_path] if p is not None]
+        cleanup_temp_files(*paths_to_clean)
         raise HTTPException(status_code=500, detail=str(e))
+
 
 
 if __name__ == "__main__":
